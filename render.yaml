@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: bishkek_ecomonitor_bot
+    env: python
+    pythonVersion: 3.11.8 # <<< Добавьте эту строку
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
