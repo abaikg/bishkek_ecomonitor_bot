@@ -7,6 +7,7 @@ from telegram.ext import (
 )
 from config import TELEGRAM_BOT_TOKEN, AQICN_API_KEY
 from handlers.start import start_command
+from handlers.donate import donate_command
 from handlers.air_quality import (
     aqi_command, # <<< ИЗМЕНЕНО: вместо get_air_quality_by_location и request_location_by_name
     handle_location_input, # <<< ИЗМЕНЕНО: вместо handle_location_name_input
@@ -119,6 +120,8 @@ def main() -> None:
 
     # Добавляем обработчик для команды /start
     application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(MessageHandler(filters.Regex("^💖 Поддержать проект$"), donate_command))
+    application.add_handler(CommandHandler("donate", donate_command)) # Также для команды /donate
 
     # ConversationHandler для получения AQI
     # Теперь он обрабатывает как отправку локации, так и ввод названия

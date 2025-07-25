@@ -34,6 +34,7 @@ async def aqi_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         "Вы можете отменить в любой момент, нажав /cancel."
     )
     
+    
     await update.message.reply_text(
         escape_markdown_v2(message_text), # Применяем escape_markdown_v2
         reply_markup=markup,
@@ -167,8 +168,7 @@ async def _send_air_quality_report(update: Update, context: ContextTypes.DEFAULT
         escaped_city_name = escape_markdown_v2(city_name_display)
         escaped_local_time = escape_markdown_v2(air_data.get('local_time', 'неизвестно'))
         
-        report_text = f"**Качество воздуха для {escaped_city_name}**:\n"
-        report_text += f"📅 Время данных: `{escaped_local_time}`\n\n"
+        report_text = f"**Качество воздуха  **:\n"
 
         overall_aqi = air_data['overall_aqi']
         category, emoji = _get_aqi_category(overall_aqi)
@@ -179,13 +179,13 @@ async def _send_air_quality_report(update: Update, context: ContextTypes.DEFAULT
         if iaqi:
             report_text += "\n**Основные загрязнители**:\n"
             for pollutant, value in iaqi.items():
-                report_text += f"  • **{escape_markdown_v2(pollutant)}**: `{escape_markdown_v2(str(value))}`\n"
+                description = _get_pollutant_description(pollutant) # Получаем описание
+                report_text += f"  • **{escape_markdown_v2(pollutant)}**: `{escape_markdown_v2(str(value))}` \\({escape_markdown_v2(description)}\\)\n" # Добавляем описание
 
         report_text += "\n"
         report_text += escape_markdown_v2(_get_basic_recommendations(overall_aqi))
         
         report_text += "\n"
-        report_text += escape_markdown_v2("ℹ️ Данные от aqicn.org (World Air Quality Index project).")
 
         if update.callback_query:
             await update.callback_query.edit_message_text(report_text, parse_mode='MarkdownV2')
@@ -206,6 +206,23 @@ async def _send_air_quality_report(update: Update, context: ContextTypes.DEFAULT
                 "Попробуйте еще раз или выберите другой район."),
                 parse_mode='MarkdownV2'
             )
+            
+            
+def _get_pollutant_description(pollutant: str) -> str:
+    """Возвращает краткое описание загрязнителя."""
+    descriptions = {
+        "pm25": "мелкодисперсные частицы",
+        "pm10": "крупные частицы пыли",
+        "co": "угарный газ",
+        "so2": "диоксид серы",
+        "no2": "диоксид азота",
+        "o3": "озон",
+        "ch4": "метан",
+        "nh3": "аммиак",
+        "h2s": "сероводород"
+    }
+    # Приводим pollutant к нижнему регистру для соответствия ключам словаря
+    return descriptions.get(pollutant.lower(), "информация отсутствует")
 
 
 def _get_aqi_category(aqi: int) -> tuple[str, str]:
